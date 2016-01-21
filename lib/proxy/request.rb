@@ -2,6 +2,7 @@ require 'net/http'
 require 'net/https'
 require 'uri'
 require 'cgi'
+require 'pry'
 
 module Proxy::HttpRequest
   class ForemanRequestFactory
@@ -79,6 +80,7 @@ module Proxy::HttpRequest
           http.key  = OpenSSL::PKey::RSA.new(File.read(private_key), nil)
         end
       end
+      binding.pry
       return http
     end
   end
