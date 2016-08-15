@@ -46,22 +46,6 @@ module Proxy::DHCP
       IPAddr.new(to_s).include?(ipaddr)
     end
 
-    def to_s
-      raise NotImplementedError, "Method 'to_s' must be implemented"
-    end
-
-    def prefix
-      raise NotImplementedError, "Method 'prefix' must be implemented"
-    end
-
-    def netmask
-      raise NotImplementedError, "Method 'netmask' must be implemented"
-    end
-
-    def valid_range
-      raise NotImplementedError, "Method 'valid_range' must be implemented"
-    end
-
     def v6?
       is_a? Proxy::DHCP::Ipv6
     end
@@ -95,10 +79,6 @@ module Proxy::DHCP
       File.delete @lockfile
     end
 
-    def unused_ip records, args = {}
-      raise NotImplementedError, "Method 'unused_ip' needs to be implemented"
-    end
-
     def inspect
       self
     end
@@ -108,10 +88,6 @@ module Proxy::DHCP
     end
 
     private
-
-    def index_from_file file
-      raise NotImplementedError, "Method 'index_from_file' needs to be implemented"
-    end
 
     def total_range args = {}
       logger.debug "trying to find an ip address, we got #{args.inspect}"

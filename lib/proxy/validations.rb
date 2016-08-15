@@ -17,10 +17,8 @@ module Proxy::Validations
 
   # validates the ip address
   def validate_ip ip
-    IPAddr.new(ip)
+    raise Error, "Invalid IP Address #{ip}" unless ip =~ Resolv::AddressRegex
     ip
-  rescue invalid_address_error
-    raise Error, "Invalid IP Address #{ip}"
   end
 
   # we may not want to raise error in some cases bu skip the ip instead
@@ -68,13 +66,5 @@ module Proxy::Validations
   def validate_record record
     raise Proxy::DHCP::Error, "Invalid Record #{record}" unless record.is_a?(Proxy::DHCP::Record)
     record
-  end
-
-  private
-
-  def invalid_address_error
-    # IPAddr::InvalidAddressError is undefined for ruby 1.9
-    return IPAddr::InvalidAddressError if IPAddr.const_defined?('InvalidAddressError')
-    ArgumentError
   end
 end

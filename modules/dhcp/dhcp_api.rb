@@ -7,6 +7,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   use Rack::MethodOverride
 
   inject_attr :dhcp_provider, :server
+  inject_attr :dhcp_provider6, :server6
 
   before do
     begin
@@ -31,7 +32,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   get "/?" do
     begin
       content_type :json
-      server.subnets.map{|s| {:network => s.network, :netmask => s.netmask, :options => s.options, :prefix => s.prefix}}.to_json
+      server.subnets.map{|s| {:network => s.network, :netmask => s.netmask, :options => s.options}}.to_json
     rescue => e
       log_halt 400, e
     end
@@ -44,6 +45,18 @@ class Proxy::DhcpApi < ::Sinatra::Base
 
       content_type :json
       {:reservations => server.all_hosts(@subnet.network), :leases => server.all_leases(@subnet.network)}.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
+  get "/ipv6/:network" do
+    begin
+      load_subnet
+      load_subnet_data
+
+      content_type :json
+      {:reservations => server6.all_hosts(@subnet.network), :leases => server6.all_leases(@subnet.network)}.to_json
     rescue => e
       log_halt 400, e
     end
@@ -62,6 +75,19 @@ class Proxy::DhcpApi < ::Sinatra::Base
     end
   end
 
+  get "/ipv6/:network/unused_ip" do
+    begin
+      content_type :json
+
+      load_subnet
+      load_subnet_data
+
+      {:ip => server6.unused_ip(@subnet, params[:mac], params[:from], params[:to])}.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
   get "/:network/:record" do
     begin
       content_type :json
@@ -70,6 +96,21 @@ class Proxy::DhcpApi < ::Sinatra::Base
       load_subnet_data
 
       record = server.find_record(@subnet.network, params[:record])
+      log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
+      record.options.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
+  get "/ipv6/:network/:record" do
+    begin
+      content_type :json
+
+      load_subnet
+      load_subnet_data
+
+      record = server6.find_record(@subnet.network, params[:record])
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
       record.options.to_json
     rescue => e
