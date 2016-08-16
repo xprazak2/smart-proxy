@@ -3,7 +3,13 @@ require 'libvirt_common/libvirt_network'
 
 module ::Proxy::DHCP::Libvirt
   class LibvirtDHCPNetwork < Proxy::LibvirtNetwork
-    attr_accessor :index_v4, :index_v6
+    attr_reader :parser, :config
+
+    def initialize(url, network, config, parser)
+      super url, network
+      @config = config
+      @parser = parser
+    end
 
     def dhcp_leases
       find_network.dhcp_leases
@@ -23,10 +29,12 @@ module ::Proxy::DHCP::Libvirt
       network_update ::Libvirt::Network::UPDATE_COMMAND_DELETE, ::Libvirt::Network::NETWORK_SECTION_IP_DHCP_HOST, xml, index(record)
     end
 
-    private
+    def subnets
+      parser.parse_config_for_subnets(xml)
+    end
 
-    def index(record)
-      record.v6? ? index_v6 : index_v4
+    def dhcp_reservations
+      parser.dhcp_reservations
     end
 
     def change_xml(record)

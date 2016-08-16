@@ -16,8 +16,7 @@ module Proxy::DHCP::Libvirt
       container.dependency :dhcp_provider, (lambda do
         Proxy::DHCP::Libvirt::Provider.new(settings[:network],
                                            container.get_dependency(:libvirt_network),
-                                           container.get_dependency(:subnet_service),
-                                           container.get_dependency(:parser))
+                                           container.get_dependency(:subnet_service))
       end)
     end
 

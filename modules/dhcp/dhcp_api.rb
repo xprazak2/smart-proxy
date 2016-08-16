@@ -7,7 +7,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   use Rack::MethodOverride
 
   inject_attr :dhcp_provider, :server
-  inject_attr :dhcp_provider6, :server6
+  # inject_attr :dhcp_provider6, :server6
 
   before do
     begin
@@ -40,8 +40,8 @@ class Proxy::DhcpApi < ::Sinatra::Base
 
   get "/:network" do
     begin
-      load_subnet
-      load_subnet_data
+      # load_subnet
+      # load_subnet_data
 
       content_type :json
       {:reservations => server.all_hosts(@subnet.network), :leases => server.all_leases(@subnet.network)}.to_json
