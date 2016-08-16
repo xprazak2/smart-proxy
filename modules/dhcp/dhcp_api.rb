@@ -44,19 +44,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
       # load_subnet_data
 
       content_type :json
-      {:reservations => server.all_hosts(@subnet.network), :leases => server.all_leases(@subnet.network)}.to_json
-    rescue => e
-      log_halt 400, e
-    end
-  end
-
-  get "/ipv6/:network" do
-    begin
-      load_subnet
-      load_subnet_data
-
-      content_type :json
-      {:reservations => server6.all_hosts(@subnet.network), :leases => server6.all_leases(@subnet.network)}.to_json
+      {:reservations => server.all_hosts(params[:network], :leases => server.all_leases(params[:network])}.to_json
     rescue => e
       log_halt 400, e
     end
@@ -69,20 +57,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
       load_subnet
       load_subnet_data
 
-      {:ip => server.unused_ip(@subnet, params[:mac], params[:from], params[:to])}.to_json
-    rescue => e
-      log_halt 400, e
-    end
-  end
-
-  get "/ipv6/:network/unused_ip" do
-    begin
-      content_type :json
-
-      load_subnet
-      load_subnet_data
-
-      {:ip => server6.unused_ip(@subnet, params[:mac], params[:from], params[:to])}.to_json
+      {:ip => server.unused_ip(params[:network], params[:mac], params[:from], params[:to])}.to_json
     rescue => e
       log_halt 400, e
     end
@@ -96,21 +71,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
       load_subnet_data
 
       record = server.find_record(@subnet.network, params[:record])
-      log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
-      record.options.to_json
-    rescue => e
-      log_halt 400, e
-    end
-  end
-
-  get "/ipv6/:network/:record" do
-    begin
-      content_type :json
-
-      load_subnet
-      load_subnet_data
-
-      record = server6.find_record(@subnet.network, params[:record])
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
       record.options.to_json
     rescue => e
@@ -151,4 +111,45 @@ class Proxy::DhcpApi < ::Sinatra::Base
       log_halt 400, e
     end
   end
+
+  get "/ipv6/:network" do
+    begin
+      load_subnet
+      load_subnet_data
+
+      content_type :json
+      {:reservations => server6.all_hosts(@subnet.network), :leases => server6.all_leases(@subnet.network)}.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
+  get "/ipv6/:network/unused_ip" do
+    begin
+      content_type :json
+
+      load_subnet
+      load_subnet_data
+
+      {:ip => server6.unused_ip(@subnet, params[:mac], params[:from], params[:to])}.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
+  get "/ipv6/:network/:record" do
+    begin
+      content_type :json
+
+      load_subnet
+      load_subnet_data
+
+      record = server6.find_record(@subnet.network, params[:record])
+      log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
+      record.options.to_json
+    rescue => e
+      log_halt 400, e
+    end
+  end
+
 end
