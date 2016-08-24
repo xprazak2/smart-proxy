@@ -55,29 +55,6 @@ module Proxy::DHCP
       "#{r.first}-#{r.last}"
     end
 
-    def get_index_and_lock filename
-      # Store for use in the unlock method
-      @filename = "#{Dir::tmpdir}/#{filename}"
-      @lockfile = "#{@filename}.lock"
-
-      # Loop if the file is locked
-      Timeout::timeout(30) { sleep 0.1 while File.exist? @lockfile }
-
-      # Touch the lock the file
-      File.open(@lockfile, "w") {}
-
-      @file = File.new(@filename,'r+') rescue File.new(@filename,'w+')
-
-      # this returns the index in the file
-      return index_from_file(@file)
-    end
-
-    def write_index_and_unlock index
-      @file.reopen(@filename,'w')
-      @file.write index
-      @file.close
-      File.delete @lockfile
-    end
 
     def inspect
       self
@@ -100,63 +77,6 @@ module Proxy::DHCP
       else
         IPAddr.new(to_s).to_range
       end
-    end
-
-    def tcp_pingable? ip
-      # This code is from net-ping, and stripped down for use here
-      # We don't need all the ldap dependencies net-ping brings in
-
-      @service_check = true
-      @port          = 7
-      @timeout       = 1
-      @exception     = nil
-      bool           = false
-      tcp            = nil
-
-      begin
-        Timeout.timeout(@timeout) do
-          begin
-            tcp = TCPSocket.new(ip, @port)
-          rescue Errno::ECONNREFUSED => err
-            if @service_check
-              bool = true
-            else
-              @exception = err
-            end
-          rescue Exception => err
-            @exception = err
-          else
-            bool = true
-          end
-        end
-      rescue Timeout::Error => err
-        @exception = err
-      ensure
-        tcp.close if tcp
-      end
-
-      bool
-    rescue
-      # We failed to check this address so we should not use it
-      true
-    end
-
-    def icmp_pingable? ip
-      # Always shell to ping, instead of using net-ping
-    if PLATFORM =~ /mingw/
-      # Windows uses different options for ping and does not have /dev/null
-      system("ping -n 1 -w 1000 #{ip} > NUL")
-    elsif self.is_a? Subnet::Ipv6
-      # use ping6 for IPv6
-      system("ping6 -c 1 -W 1 #{ip} > /dev/null")
-    else
-      # Default to Linux ping options and send to /dev/null
-      system("ping -c 1 -W 1 #{ip} > /dev/null")
-    end
-    rescue => err
-      # We failed to check this address so we should not use it
-      logger.warn "Unable to icmp ping #{ip} because #{err.inspect}. Skipping this address..."
-      true
     end
   end
 end

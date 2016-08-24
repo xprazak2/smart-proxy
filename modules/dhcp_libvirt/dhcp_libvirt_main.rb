@@ -1,10 +1,11 @@
 module Proxy::DHCP::Libvirt
   class Provider < ::Proxy::DHCP::Server
-    attr_reader :network, :libvirt_network
+    attr_reader :network, :libvirt_network, :ip_reserver
 
-    def initialize(network, libvirt_network_impl, subnet_service)
+    def initialize(network, libvirt_network, subnet_service, ip_reserver)
       @network = network
-      @libvirt_network = libvirt_network_impl
+      @libvirt_network = libvirt_network
+      @ip_reserver = ip_reserver
       super(@network, nil, subnet_service)
     end
 
@@ -24,6 +25,11 @@ module Proxy::DHCP::Libvirt
     def subnets
       libvirt_network.subnets
       # super
+    end
+
+    def unused_ip(network, mac, from_addr, to_addr)
+      # subnet = service.find_subnet network
+      ip_reserver.unused_ip(network, mac, from_addr, to_addr)
     end
 
     def all_hosts(subnet_addr)

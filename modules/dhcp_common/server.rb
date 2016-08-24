@@ -63,28 +63,6 @@ module Proxy::DHCP
         service.find_lease_by_mac(subnet_address, an_address)
     end
 
-    def unused_ip(subnet, mac_address, from_address, to_address)
-      # first check if we already have a record for this host
-      # if we do, we can simply reuse the same ip address.
-      if mac_address
-        r = ip_by_mac_address_and_range(subnet, mac_address, from_address, to_address)
-        return r if r
-      end
-
-      subnet.unused_ip(all_hosts(subnet.network) + all_leases(subnet.network),
-                       :from => from_address, :to => to_address)
-    end
-
-    def ip_by_mac_address_and_range(subnet, mac_address, from_address, to_address)
-      r = service.find_host_by_mac(subnet.network, mac_address) ||
-          service.find_lease_by_mac(subnet.network, mac_address)
-
-      if r && subnet.valid_range(:from => from_address, :to => to_address).include?(r.ip)
-        logger.debug "Found an existing DHCP record #{r}, reusing..."
-        return r.ip
-      end
-    end
-
     def inspect
       self
     end
