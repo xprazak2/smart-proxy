@@ -28,7 +28,6 @@ module Proxy::DHCP::Libvirt
     end
 
     def unused_ip(network, mac, from_addr, to_addr)
-      # subnet = service.find_subnet network
       ip_reserver.unused_ip(network, mac, from_addr, to_addr)
     end
 

@@ -46,10 +46,6 @@ module Proxy::DHCP
       IPAddr.new(to_s).include?(ipaddr)
     end
 
-    def v6?
-      is_a? Proxy::DHCP::Ipv6
-    end
-
     def range
       r = valid_range
       "#{r.first}-#{r.last}"
