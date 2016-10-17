@@ -37,7 +37,8 @@ module Proxy::DHCP::Libvirt
       else
         netmask = elem.attributes["netmask"]
       end
-      Proxy::DHCP::Ipv4.new(gateway, netmask)
+      network = IPAddr.new(gateway).mask(netmask).to_s
+      Proxy::DHCP::Ipv4.new(network, netmask)
     end
 
 

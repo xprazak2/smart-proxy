@@ -19,7 +19,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
 
   helpers do
     def load_subnet
-      binding.pry
       @subnet  = server.find_subnet(params[:network])
       log_halt 404, "Subnet #{params[:network]} not found" unless @subnet
       @subnet
@@ -54,7 +53,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
   get "/:network/unused_ip" do
     begin
       content_type :json
-      binding.pry
 
       load_subnet
 

@@ -14,7 +14,6 @@ module Proxy::DHCP::Libvirt
     def load_subnets
       subnets = libvirt_networks.flat_map(&:subnets)
       service.add_subnets(*subnets)
-      # service.add_subnets(*libvirt_network.subnets)
     end
 
     def load_records(subnet, xml)

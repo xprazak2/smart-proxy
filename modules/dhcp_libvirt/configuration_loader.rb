@@ -2,7 +2,7 @@ module Proxy::DHCP::Libvirt
   class PluginConfiguration
     def load_dependency_injection_wirings(container, settings)
       container.dependency :memory_store, ::Proxy::MemoryStore
-      container.dependency :subnet_service, (lambda do
+      container.singleton_dependency :subnet_service, (lambda do
         ::Proxy::DHCP::SubnetService.new(container.get_dependency(:memory_store), container.get_dependency(:memory_store),
                                          container.get_dependency(:memory_store), container.get_dependency(:memory_store),
                                          container.get_dependency(:memory_store), container.get_dependency(:memory_store))

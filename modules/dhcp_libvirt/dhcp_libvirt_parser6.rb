@@ -2,6 +2,8 @@ require 'rexml/document'
 
 module Proxy::DHCP::Libvirt
   class Parser6
+    include Proxy::Log
+
     attr_reader :service
     attr_accessor :index
 
@@ -29,7 +31,8 @@ module Proxy::DHCP::Libvirt
     def parse_subnet(elem)
       gateway = elem.attributes["address"]
       prefix = elem.attributes["prefix"]
-      Proxy::DHCP::Ipv6.new(gateway, prefix)
+      network = IPAddr.new(gateway).mask(prefix).to_s
+      Proxy::DHCP::Ipv6.new(network, prefix)
     end
 
     def parse_reservations(subnet, xml)
