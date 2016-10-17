@@ -22,7 +22,7 @@ module Proxy::DHCP::Libvirt
       ret_val
     rescue Exception => e
       logger.error msg = "Unable to parse subnets XML: #{e}"
-      logger.debug xml if defined?(xml)
+      logger.debug xml if xml
       raise Proxy::DHCP::Error, msg
     end
 

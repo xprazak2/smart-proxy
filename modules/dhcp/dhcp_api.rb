@@ -19,6 +19,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
 
   helpers do
     def load_subnet
+      binding.pry
       @subnet  = server.find_subnet(params[:network])
       log_halt 404, "Subnet #{params[:network]} not found" unless @subnet
       @subnet
@@ -44,7 +45,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
       # load_subnet_data
 
       content_type :json
-      {:reservations => server.all_hosts(params[:network], :leases => server.all_leases(params[:network])}.to_json
+      {:reservations => server.all_hosts(params[:network]), :leases => server.all_leases(params[:network])}.to_json
     rescue => e
       log_halt 400, e
     end
@@ -53,11 +54,16 @@ class Proxy::DhcpApi < ::Sinatra::Base
   get "/:network/unused_ip" do
     begin
       content_type :json
+      binding.pry
 
       load_subnet
+
       load_subnet_data
 
-      {:ip => server.unused_ip(params[:network], params[:mac], params[:from], params[:to])}.to_json
+      ip = server.unused_ip(params[:network], params[:mac], params[:from], params[:to])
+      {:ip => ip}.to_json
+
+      # {:ip => server.unused_ip(params[:network], params[:mac], params[:from], params[:to])}.to_json
     rescue => e
       log_halt 400, e
     end

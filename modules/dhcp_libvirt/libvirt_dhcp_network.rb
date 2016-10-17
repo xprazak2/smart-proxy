@@ -3,7 +3,7 @@ require 'libvirt_common/libvirt_network'
 
 module ::Proxy::DHCP::Libvirt
   class LibvirtDHCPNetwork < Proxy::LibvirtNetwork
-    attr_reader :parser, :config
+    attr_reader :parser
 
     def initialize(url, network, parser)
       super url, network
@@ -19,7 +19,7 @@ module ::Proxy::DHCP::Libvirt
     end
 
     def subnets
-      parser.parse_config_for_subnets(xml)
+      parser.parse_config_for_subnets(dump_xml)
     end
 
     def dhcp_reservations
