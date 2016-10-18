@@ -11,15 +11,14 @@ module Proxy::DHCP::NativeMS
       super(name, subnets, subnet_service)
     end
 
-    def del_record subnet, record
-      validate_subnet subnet
+    def del_record record
       validate_record record
       # TODO: Refactor this into the base class
       raise InvalidRecord, "#{record} is static - unable to delete" unless record.deleteable?
 
       mac = record.mac.gsub(/:/,"")
       msg = "Removed DHCP reservation for #{record.name} => #{record.ip} - #{record.mac}"
-      cmd = "scope #{subnet.network} delete reservedip #{record.ip} #{mac}"
+      cmd = "scope #{record.subnet.network} delete reservedip #{record.ip} #{mac}"
 
       execute(cmd, msg)
     end

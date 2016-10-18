@@ -81,13 +81,9 @@ class Proxy::DhcpApi < ::Sinatra::Base
   # delete a record from a network
   delete "/:network/:record" do
     begin
-
-      #TODO: move loading of the subnet into server.del_record so we can pass params[:network] instead of @subnet
-      load_subnet
-
       record = server.find_record(params[:network], params[:record])
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
-      server.del_record @subnet, record
+      server.del_record record
     rescue Proxy::DHCP::InvalidRecord
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found"
     rescue Exception => e

@@ -23,8 +23,7 @@ module Proxy::DHCP::Libvirt
       raise Proxy::DHCP::Error, msg
     end
 
-    def del_record(_, record)
-      # libvirt only supports one subnet per network
+    def del_record(record)
       libvirt_network.del_dhcp_record record
       service.delete_host(record)
     rescue ::Libvirt::Error => e
