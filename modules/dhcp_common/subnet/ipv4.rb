@@ -24,11 +24,5 @@ module Proxy::DHCP
     def broadcast
       IPAddr.new(to_s).to_range.last.to_s
     end
-
-    private
-
-    def index_from_file file
-      file.readlines.first.to_i rescue 0
-    end
   end
 end

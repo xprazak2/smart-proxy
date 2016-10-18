@@ -53,15 +53,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   get "/:network/unused_ip" do
     begin
       content_type :json
-
-      load_subnet
-
-      load_subnet_data
-
-      ip = server.unused_ip(params[:network], params[:mac], params[:from], params[:to])
-      {:ip => ip}.to_json
-
-      # {:ip => server.unused_ip(params[:network], params[:mac], params[:from], params[:to])}.to_json
+      { :ip => server.unused_ip(params[:network], params[:mac], params[:from], params[:to]) }.to_json
     rescue => e
       log_halt 400, e
     end

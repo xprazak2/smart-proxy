@@ -60,11 +60,5 @@ module Proxy::DHCP
       end
       nil
     end
-
-    private
-
-    def index_from_file file
-      file.readline rescue 0
-    end
   end
 end

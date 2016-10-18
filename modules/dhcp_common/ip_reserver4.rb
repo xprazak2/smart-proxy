@@ -2,14 +2,13 @@ require 'dhcp_common/ip_reserver'
 
 module Proxy::DHCP
   class IpReserver4 < IpReserver
-    ##### moved from server
+
     def unused_ip network, mac_address, from_address, to_address
       # first check if we already have a record for this host
       # if we do, we can simply reuse the same ip address.
       subnet = service.find_subnet network
-      r = record_by_mac_address(subnet, mac_address, from_address, to_address)
-      return r.ip if ip_by_range(record, from_address, to_address)
-      nil
+      record = record_by_mac_address(subnet, mac_address)
+      return record.ip if ip_by_range(record, from_address, to_address)
 
       find_unused_ip(subnet, service.all_hosts(network) + service.all_leases(network),
                      :from => from_address, :to => to_address)
@@ -25,9 +24,7 @@ module Proxy::DHCP
         return r.ip
       end
     end
-    #####
 
-    ##### moved from subnet
     # NOTE: stored index is indepndent of call parameters:
     # Whether range is passed or not, the lookup starts with the address at the indexed position,
     # Is the assumption that unused_ip is always called with the same parameters for a given subnet?
@@ -35,7 +32,7 @@ module Proxy::DHCP
     # returns the next unused IP Address in a subnet
     # Pings the IP address as well (just in case its not in Proxy::DHCP)
     def find_unused_ip subnet, records, args = {}
-      free_ips = subnet.valid_range(args) - records.collect{|record| record.ip}
+      free_ips = subnet.valid_range(args) - records.collect { |record| record.ip }
       if free_ips.empty?
         logger.warn "No free IPs at #{self}"
         return nil
@@ -43,7 +40,7 @@ module Proxy::DHCP
         @index = 0
         begin
           # Read and lock the storage file
-          stored_index = get_index_and_lock("foreman-proxy_#{network}_#{prefix}.tmp")
+          stored_index = get_index_and_lock("foreman-proxy_#{subnet.network}_#{subnet.prefix}.tmp")
           free_ips.rotate(stored_index).each do |ip|
             logger.debug "Searching for free IP - pinging #{ip}"
             if tcp_pingable?(ip) || icmp_pingable?(ip)
@@ -64,7 +61,6 @@ module Proxy::DHCP
         nil
       end
     end
-    ####
 
     def icmp_pingable? ip
       system("ping -c 1 -W 1 #{ip} > /dev/null")

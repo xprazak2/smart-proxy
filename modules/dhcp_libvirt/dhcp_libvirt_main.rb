@@ -10,13 +10,13 @@ module Proxy::DHCP::Libvirt
     end
 
     def load_subnets
-      logger.debug "load_subnets method should not be called"
+      logger.debug "load_subnets method in dhcp provider should not be called"
       # super
       # parser.load_subnets
     end
 
     def load_subnet_data(subnet)
-      logger.debug "load_subnet_data method should not be called"
+      logger.debug "load_subnet_data method in dhcp provider should not be called"
       # super(subnet)
       # parser.load_subnet_data(subnet)
       # libvirt_network.load_subnet_data(subnet)

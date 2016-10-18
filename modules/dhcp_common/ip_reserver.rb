@@ -1,5 +1,7 @@
 module Proxy::DHCP
   class IpReserver
+    include Proxy::Log
+
     attr_reader :service
 
     def initialize subnet_service
@@ -31,7 +33,6 @@ module Proxy::DHCP
       File.open(@lockfile, "w") {}
 
       @file = File.new(@filename,'r+') rescue File.new(@filename,'w+')
-
       # this returns the index in the file
       return index_from_file(@file)
     end
@@ -87,6 +88,12 @@ module Proxy::DHCP
       # We failed to check this address so we should not use it
       logger.warn "Unable to icmp ping #{ip} because #{err.inspect}. Skipping this address..."
       true
+    end
+
+    private
+
+    def index_from_file file
+      file.readline.to_i rescue 0
     end
   end
 end
