@@ -22,8 +22,8 @@ module ::Proxy::DHCP::Libvirt
       parser.parse_config_for_subnets(dump_xml)
     end
 
-    def dhcp_reservations
-      parser.dhcp_reservations
+    def dhcp_hosts(subnet)
+      parser.parse_config_for_reservations(subnet, dump_xml)
     end
 
     def add_dhcp_record(record)

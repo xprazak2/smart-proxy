@@ -63,6 +63,10 @@ module Proxy::DHCP
         service.find_lease_by_mac(subnet_address, an_address)
     end
 
+    # def delete_record(record)
+    #   service.delete_record record
+    # end
+
     def inspect
       self
     end

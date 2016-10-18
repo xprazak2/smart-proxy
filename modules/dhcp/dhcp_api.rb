@@ -6,7 +6,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   authorize_with_ssl_client
   use Rack::MethodOverride
 
-  inject_attr :dhcp_provider, :server
+  inject_attr :dhcp_provider4, :server
   # inject_attr :dhcp_provider6, :server6
 
   before do
@@ -23,10 +23,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
       log_halt 404, "Subnet #{params[:network]} not found" unless @subnet
       @subnet
     end
-
-    def load_subnet_data
-      server.load_subnet_data(@subnet)
-    end
   end
 
   get "/?" do
@@ -40,9 +36,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
 
   get "/:network" do
     begin
-      # load_subnet
-      # load_subnet_data
-
       content_type :json
       {:reservations => server.all_hosts(params[:network]), :leases => server.all_leases(params[:network])}.to_json
     rescue => e
@@ -62,11 +55,7 @@ class Proxy::DhcpApi < ::Sinatra::Base
   get "/:network/:record" do
     begin
       content_type :json
-
-      load_subnet
-      load_subnet_data
-
-      record = server.find_record(@subnet.network, params[:record])
+      record = server.find_record(params[:network], params[:record])
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
       record.options.to_json
     rescue => e
@@ -77,9 +66,6 @@ class Proxy::DhcpApi < ::Sinatra::Base
   # create a new record in a network
   post "/:network" do
     begin
-      load_subnet
-      load_subnet_data
-
       content_type :json
       # NOTE: sinatra overwrites params[:network] (required by add_record call) with the :network url parameter
       server.add_record(params)
@@ -95,10 +81,11 @@ class Proxy::DhcpApi < ::Sinatra::Base
   # delete a record from a network
   delete "/:network/:record" do
     begin
-      load_subnet
-      load_subnet_data
 
-      record = server.find_record(@subnet.network, params[:record])
+      #TODO: move loading of the subnet into server.del_record so we can pass params[:network] instead of @subnet
+      load_subnet
+
+      record = server.find_record(params[:network], params[:record])
       log_halt 404, "DHCP record #{params[:network]}/#{params[:record]} not found" unless record
       server.del_record @subnet, record
     rescue Proxy::DHCP::InvalidRecord
@@ -147,5 +134,4 @@ class Proxy::DhcpApi < ::Sinatra::Base
       log_halt 400, e
     end
   end
-
 end

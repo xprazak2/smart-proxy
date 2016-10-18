@@ -2,54 +2,60 @@ module Proxy::DHCP::Libvirt
   class PluginConfiguration
     def load_dependency_injection_wirings(container, settings)
       container.dependency :memory_store, ::Proxy::MemoryStore
-      container.singleton_dependency :subnet_service, (lambda do
+      container.singleton_dependency :subnet_service4, (lambda do
+        ::Proxy::DHCP::SubnetService.new(container.get_dependency(:memory_store), container.get_dependency(:memory_store),
+                                         container.get_dependency(:memory_store), container.get_dependency(:memory_store),
+                                         container.get_dependency(:memory_store), container.get_dependency(:memory_store))
+      end)
+      container.singleton_dependency :subnet_service6, (lambda do
         ::Proxy::DHCP::SubnetService.new(container.get_dependency(:memory_store), container.get_dependency(:memory_store),
                                          container.get_dependency(:memory_store), container.get_dependency(:memory_store),
                                          container.get_dependency(:memory_store), container.get_dependency(:memory_store))
       end)
       container.dependency :ip_reserver4, (lambda do
-        ::Proxy::DHCP::IpReserver4.new(container.get_dependency(:subnet_service))
+        ::Proxy::DHCP::IpReserver4.new(container.get_dependency(:subnet_service4))
       end)
-      container.dependency :parser4, (lambda do
-        ::Proxy::DHCP::Libvirt::Parser4.new(container.get_dependency(:subnet_service))
+      container.singleton_dependency :parser4, (lambda do
+        ::Proxy::DHCP::Libvirt::Parser4.new
       end)
       container.dependency :libvirt_network4, (lambda do
-        ::Proxy::DHCP::Libvirt::LibvirtDHCPNetwork.new(settings[:url], settings[:network], container.get_dependency(:parser4))
+        ::Proxy::DHCP::Libvirt::LibvirtDHCPNetwork4.new(settings[:url], settings[:network], container.get_dependency(:parser4))
       end)
 
       container.dependency :ip_reserver6, (lambda do
-        ::Proxy::DHCP::IpReserver6.new(container.get_dependency(:subnet_service))
+        ::Proxy::DHCP::IpReserver6.new(container.get_dependency(:subnet_service6))
       end)
-      container.dependency :parser6, (lambda do
-        ::Proxy::DHCP::Libvirt::Parser6.new(container.get_dependency(:subnet_service))
+      container.singleton_dependency :parser6, (lambda do
+        ::Proxy::DHCP::Libvirt::Parser6.new
       end)
       container.dependency :libvirt_network6, (lambda do
-        ::Proxy::DHCP::Libvirt::LibvirtDHCPNetwork.new(settings[:url], settings[:network], container.get_dependency(:parser6))
+        ::Proxy::DHCP::Libvirt::LibvirtDHCPNetwork6.new(settings[:url], settings[:network], container.get_dependency(:parser6))
       end)
 
-      container.dependency :dhcp_provider, (lambda do
+      container.dependency :dhcp_provider4, (lambda do
         Proxy::DHCP::Libvirt::Provider.new(settings[:network],
                                            container.get_dependency(:libvirt_network4),
-                                           container.get_dependency(:subnet_service),
+                                           container.get_dependency(:subnet_service4),
                                            container.get_dependency(:ip_reserver4))
       end)
 
       container.dependency :dhcp_provider6, (lambda do
         Proxy::DHCP::Libvirt::Provider.new(settings[:network],
                                            container.get_dependency(:libvirt_network6),
-                                           container.get_dependency(:subnet_service),
+                                           container.get_dependency(:subnet_service6),
                                            container.get_dependency(:ip_reserver6))
       end)
 
       container.dependency :subnet_loader, (lambda do
-        Proxy::DHCP::Libvirt::SubnetLoader.new(container.get_dependency(:subnet_service),
-                                               [container.get_dependency(:libvirt_network4),
-                                                container.get_dependency(:libvirt_network6)])
+        Proxy::DHCP::Libvirt::SubnetLoader.new({ container.get_dependency(:subnet_service4) => container.get_dependency(:libvirt_network4),
+                                                 container.get_dependency(:subnet_service6) => container.get_dependency(:libvirt_network6) })
       end)
     end
 
     def load_classes
       require 'dhcp_libvirt/libvirt_dhcp_network'
+      require 'dhcp_libvirt/libvirt_dhcp_network4'
+      require 'dhcp_libvirt/libvirt_dhcp_network6'
       require 'dhcp_common/subnet_service'
       require 'dhcp_common/ip_reserver4'
       require 'dhcp_common/ip_reserver6'

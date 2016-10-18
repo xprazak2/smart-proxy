@@ -4,12 +4,7 @@ module Proxy::DHCP::Libvirt
   class Parser6
     include Proxy::Log
 
-    attr_reader :service
     attr_accessor :index
-
-    def initialize(subnet_service)
-      @service = subnet_service
-    end
 
     def parse_config_for_subnets(xml)
       ret_val = []
@@ -35,27 +30,17 @@ module Proxy::DHCP::Libvirt
       Proxy::DHCP::Ipv6.new(network, prefix)
     end
 
-    def parse_reservations(subnet, xml)
-      ret_val = []
-      REXML::Document.new xml
+    def parse_config_for_reservations(subnet, xml)
+      result = []
+      doc = REXML::Document.new xml
       REXML::XPath.each(doc, "//network/ip[@family='ipv6']/dhcp/host") do |e|
-        ret_val << Proxy::DHCP::Reservation.new(
+        result << Proxy::DHCP::Reservation.new(
           :subnet => subnet,
           :ip => e.attributes["ip"],
           :id => e.attributes["id"],
           :hostname => e.attributes["name"])
       end
-      ret_val
+      result
     end
-
-    # def load_subnets(xml)
-    #   service.add_subnets(*parse_config_for_subnets(xml))
-    # end
-
-
-    # def load_records(subnet, xml)
-    #   reservations = parse_config_for_dhcp_reservations(subnet, xml)
-    #   reservations.each { |record| service.add_host(record.subnet_address, record) }
-    # end
   end
 end

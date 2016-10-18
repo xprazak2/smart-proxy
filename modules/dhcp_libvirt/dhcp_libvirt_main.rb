@@ -9,49 +9,14 @@ module Proxy::DHCP::Libvirt
       super(@network, nil, subnet_service)
     end
 
-    def load_subnets
-      logger.debug "load_subnets method in dhcp provider should not be called"
-      # super
-      # parser.load_subnets
-    end
-
-    def load_subnet_data(subnet)
-      logger.debug "load_subnet_data method in dhcp provider should not be called"
-      # super(subnet)
-      # parser.load_subnet_data(subnet)
-      # libvirt_network.load_subnet_data(subnet)
-    end
-
-    def subnets
-      libvirt_network.subnets
-      # super
-    end
-
     def unused_ip(network, mac, from_addr, to_addr)
       ip_reserver.unused_ip(network, mac, from_addr, to_addr)
-    end
-
-    def all_hosts(subnet_addr)
-      libvirt_network.dhcp_hosts
-      # super
-    end
-
-    def all_leases(subnet_addr)
-      libvirt_network.dhcp_leases.map do |element|
-        lease = Proxy::DHCP::Lease.new(
-          :subnet => subnet,
-          :ip => element['ipaddr'],
-          :mac => element['mac'],
-          :starts => Time.now.utc,
-          :ends => Time.at(element['expirytime'] || 0).utc,
-          :state => 'active'
-        )
-      end
     end
 
     def add_record(options={})
       record = super(options)
       libvirt_network.add_dhcp_record record
+      service.add_host(service.find_subnet(options['network']), record)
       record
     rescue ::Libvirt::Error => e
       logger.error msg = "Error adding DHCP record: #{e}"
@@ -61,6 +26,7 @@ module Proxy::DHCP::Libvirt
     def del_record(_, record)
       # libvirt only supports one subnet per network
       libvirt_network.del_dhcp_record record
+      service.delete_host(record)
     rescue ::Libvirt::Error => e
       logger.error msg = "Error removing DHCP record: #{e}"
       raise Proxy::DHCP::Error, msg
